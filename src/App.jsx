@@ -15,15 +15,86 @@ const data=[
 
 class App extends React.Component {
   state={
-    data:data
+    data:data,
+    form:{
+      id:'',
+      personaje:'',
+      anime:''
+    },
+    modalInsertar:false,
+    modalEditar:false
   }
+
+ 
+
+  handleChange=e=>{
+    this.setState({
+      form:{
+        ...this.state.form,
+        [e.target.name]:e.target.value,
+      }
+    });
+  }
+
+  mostrarModalInsertar=()=>{
+    this.setState({modalInsertar:true});
+  }
+
+  ocultarModalInsertar=()=>{
+    this.setState({modalInsertar:false});
+  }
+
+  mostrarModalEditar=(registro)=>{
+    this.setState({modalEditar:true,form:registro});
+  }
+
+  ocultarModalEditar=()=>{
+    this.setState({modalEditar:false});
+  }
+
+  Insertar=()=>{
+    let valorNuevo={...this.state.form};
+    valorNuevo.id=this.state.data.length+1;
+    let lista=this.state.data;
+    lista.push(valorNuevo);
+    this.setState({data:lista,modalInsertar:false}); //actualizamos el estado
+  }
+
+  editar=(dato)=>{
+    let contador=0;
+    let lista=this.state.data;
+    lista.map((registro)=>{
+      if(dato.id==registro.id){
+        lista[contador].personaje=dato.personaje;
+        lista[contador].anime=dato.anime;
+      }
+      contador++;
+    });
+    this.setState({data:lista,modalEditar:false})
+  }
+
+  eliminar=(dato)=>{
+    let opcion=window.confirm("¿Esta Seguro de Eliminar el Registro " +dato.id+ "?");
+    if(opcion){
+      let contador=0;
+      let lista=this.state.data;
+      lista.map((registro)=>{
+        if(registro.id==dato.id){
+          lista.splice(contador,1)
+        }
+        contador+1;
+      })
+      this.setState({data:lista}) //actualizamos el estado
+    }
+  }
+
 render(){
   
   return (
     <>
     <Container>
        <br/>
-    <Button color="success">Insertar Nuevo Personaje</Button>
+    <Button color="success" onClick={()=>this.mostrarModalInsertar()} >Insertar Nuevo Personaje</Button>
       <br/><br/>
 
       <Table>
@@ -40,15 +111,15 @@ render(){
               <td>{elemento.id}</td>
               <td>{elemento.personaje}</td>
               <td>{elemento.anime}</td>
-              <td><Button color="primary">Editar</Button>{"  "}
-              <Button color="danger">Eliminar</Button></td>
+              <td><Button color="primary" onClick={()=>this.mostrarModalEditar(elemento)}>Editar</Button>{"  "}
+              <Button color="danger" onClick={()=>this.eliminar(elemento)}>Eliminar</Button></td>
             </tr>
           ))}
         </tbody>
       </Table>
     </Container>
 
-    <Modal>
+    <Modal isOpen={this.state.modalInsertar}>
       <ModalHeader>
         <div>
           <h3>Insertar Registro</h3>
@@ -63,18 +134,52 @@ render(){
 
         <FormGroup>
           <label>Personaje:</label>
-          <input className='form-control' name="personaje" type="text"/>
+          <input className='form-control' name="personaje" type="text" onChange={this.handleChange}/>
         </FormGroup>
 
         <FormGroup>
           <label>Anime:</label>
-          <input className='form-control' name="anime" type="text"/>
+          <input className='form-control' name="anime" type="text" onChange={this.handleChange}/>
         </FormGroup>
         </ModalBody>      
 
         <ModalFooter>
-          <Button color="primary">Insertar</Button>
-          <Button color="danger">Cancelar</Button>
+          <Button color="primary" onClick={()=>this.Insertar()}>Insertar</Button>
+          <Button color="danger" onClick={()=>this.ocultarModalInsertar()}>Cancelar</Button>
+        </ModalFooter>
+
+    </Modal>
+
+    <Modal isOpen={this.state.modalEditar}>
+      <ModalHeader>
+        <div>
+          <h3>Editar Registro</h3>
+        </div>
+      </ModalHeader>
+
+      <ModalBody>
+      <FormGroup>
+          <label>Id:</label>
+          <input className='form-control' readOnly type="text" 
+          value={this.state.form.id}/>
+        </FormGroup>
+
+        <FormGroup>
+          <label>Personaje:</label>
+          <input className='form-control' name="personaje" type="text" onChange={this.handleChange}
+          value={this.state.form.personaje}/>
+        </FormGroup>
+
+        <FormGroup>
+          <label>Anime:</label>
+          <input className='form-control' name="anime" type="text" onChange={this.handleChange}
+          value={this.state.form.anime}/>
+        </FormGroup>
+        </ModalBody>      
+
+        <ModalFooter>
+          <Button color="primary" onClick={()=>this.editar(this.state.form)} >Editar</Button>
+          <Button color="danger" onClick={()=>this.ocultarModalEditar()}>Cancelar</Button>
         </ModalFooter>
 
     </Modal>
